@@ -3,7 +3,6 @@ package xyz.fz.rpc.util;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import io.netty.buffer.ByteBuf;
 import xyz.fz.rpc.exception.NotEnoughException;
 import xyz.fz.rpc.model.Request;
