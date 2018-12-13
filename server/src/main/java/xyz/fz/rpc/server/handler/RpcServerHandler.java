@@ -8,6 +8,7 @@ import xyz.fz.rpc.model.Request;
 import xyz.fz.rpc.model.Response;
 import xyz.fz.rpc.server.RpcCmd;
 import xyz.fz.rpc.util.BaseUtil;
+import xyz.fz.rpc.util.ThreadUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -24,23 +25,25 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<Request> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
-        RpcCmd rpcCmd = rpcInvokeMap.get(msg.getClazz() + "@" + msg.getMethod() + "@" + (msg.getArgs() == null ? 0 : msg.getArgs().length));
-        Response response = new Response();
-        response.setId(msg.getId());
-        try {
-            Object result = rpcCmd.getServiceMethod().invoke(rpcCmd.getServiceObject(), msg.getArgs());
-            response.setSuccess(true);
-            response.setData(result);
-        } catch (Exception e) {
-            LOGGER.error(BaseUtil.getExceptionStackTrace(e));
-            response.setSuccess(false);
-            if (e instanceof InvocationTargetException) {
-                response.setErrorMessage(((InvocationTargetException) e).getTargetException().getMessage());
-            } else {
-                response.setErrorMessage(e.getMessage());
+        ThreadUtil.execute(() -> {
+            RpcCmd rpcCmd = rpcInvokeMap.get(msg.getClazz() + "@" + msg.getMethod() + "@" + (msg.getArgs() == null ? 0 : msg.getArgs().length));
+            Response response = new Response();
+            response.setId(msg.getId());
+            try {
+                Object result = rpcCmd.getServiceMethod().invoke(rpcCmd.getServiceObject(), msg.getArgs());
+                response.setSuccess(true);
+                response.setData(result);
+            } catch (Exception e) {
+                LOGGER.error(BaseUtil.getExceptionStackTrace(e));
+                response.setSuccess(false);
+                if (e instanceof InvocationTargetException) {
+                    response.setErrorMessage(((InvocationTargetException) e).getTargetException().getMessage());
+                } else {
+                    response.setErrorMessage(e.getMessage());
+                }
             }
-        }
-        ctx.writeAndFlush(response);
+            ctx.writeAndFlush(response);
+        });
     }
 
     @Override

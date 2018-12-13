@@ -6,6 +6,7 @@ import xyz.fz.rpc.exception.NetErrorException;
 import xyz.fz.rpc.exception.RpcException;
 import xyz.fz.rpc.model.Request;
 import xyz.fz.rpc.model.Response;
+import xyz.fz.rpc.util.SnowFlake;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -21,6 +22,8 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
         this.proxyInterface = proxyInterface;
     }
 
+    private static final SnowFlake snowFlake = new SnowFlake(1, 1);
+
     @Override
     @SuppressWarnings("unchecked")
     public T getObject() throws Exception {
@@ -28,7 +31,7 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 Request request = new Request();
-                request.setId(System.nanoTime());
+                request.setId(snowFlake.generateNextId());
                 request.setClazz(proxyInterface.getName());
                 request.setMethod(method.getName());
                 request.setArgs(args);
