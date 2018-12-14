@@ -18,6 +18,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<Response> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Response msg) throws Exception {
         CompletableFuture<Object> future = rpcRecordMap.get(msg.getId());
+        rpcRecordMap.remove(msg.getId());
         future.complete(msg);
     }
 
