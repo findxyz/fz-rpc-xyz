@@ -39,12 +39,14 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
                 try {
                     RpcClient.call(request, completableFuture);
                 } catch (Exception e) {
+                    RpcClient.RPC_REQUEST_MAP.remove(request.getId());
                     throw new NetErrorException(e.getCause());
                 }
                 Response response = (Response) completableFuture.get(5, TimeUnit.SECONDS);
                 if (response.isSuccess()) {
                     return response.getData();
                 } else {
+                    RpcClient.RPC_REQUEST_MAP.remove(request.getId());
                     throw new RpcException(response.getErrorMessage());
                 }
             }

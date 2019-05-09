@@ -34,7 +34,7 @@ public class RpcClient {
 
     private static Channel channel;
 
-    private static ConcurrentHashMap<Long, CompletableFuture<Object>> rpcRecordMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, CompletableFuture<Object>> RPC_REQUEST_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("InfiniteRecursion")
     public void start() {
@@ -49,7 +49,7 @@ public class RpcClient {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new KryoObjectDecoder());
                             ch.pipeline().addLast(new KryoObjectEncoder());
-                            ch.pipeline().addLast(new RpcClientHandler(rpcRecordMap));
+                            ch.pipeline().addLast(new RpcClientHandler());
                         }
                     });
 
@@ -76,7 +76,7 @@ public class RpcClient {
     }
 
     public static void call(Request request, CompletableFuture<Object> completableFuture) {
-        rpcRecordMap.put(request.getId(), completableFuture);
+        RPC_REQUEST_MAP.put(request.getId(), completableFuture);
         channel.writeAndFlush(request);
     }
 }
